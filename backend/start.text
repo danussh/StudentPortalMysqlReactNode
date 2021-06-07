@@ -1,0 +1,116 @@
+npm init -y
+npm i express sequelize sequelize-cli mysql2
+
+set in config File databaseName
+before that do this => in mySql WB
+DROP DATABASE IF EXISTS StudentSchema;
+CREATE DATABASE StudentSchema;
+
+set the database name in config
+
+ models = CREATE Table eg: where table name is Students
+
+ module.exports = (sequelize,DataTypes)=>{
+    const Students = sequelize.define("Students",{
+        Firstname :{
+            type:DataTypes.STRING,
+            //primaryKey: true,
+            allowNull:false
+        },
+        Lastname:{
+            type:DataTypes.STRING,
+            allowNull:false
+        },
+        DateofBirth:{
+            type:DataTypes.DATE,
+            allowNull:false
+
+        },
+        Class:{
+            type:DataTypes.INTEGER,
+            allowNull:false
+
+        }
+    });
+    
+    return Students;
+}
+
+
+once table created create routes folder and apiRoutes.js in it add the following Routes in it
+
+const express= require("express");
+const router =express.Router()
+const db= require("../models")
+
+// Get Students Data
+router.get("/lists",(req,res)=>{
+db.Students.findAll().then((datas)=>{
+    res.send(datas)
+}).catch((err)=>{
+    res.send(err)
+})
+})
+
+//Create Student data
+router.post("/create",(req,res)=>{
+    db.Students.create({
+        Firstname:req.body.Firstname,
+        Lastname:req.body.Lastname,
+        DateofBirth:req.body.DateofBirth,
+        Class:req.body.Class
+    }).then((datas)=>{
+        console.log(datas)
+        res.send(datas)
+    }).catch(err=>{
+        console.log(err)
+        res.send(err)
+    })
+})
+
+
+//Delete a Student Data
+
+router.delete("/delete/:id",(req,res)=>{
+    console.log(req.params.id)
+    db.Students.destroy({
+        where:{
+            id:req.params.id
+        }
+    }).then(()=>{
+        res.send("DELETED")
+    }).catch((err)=>{
+        res.send(err)
+    })
+})
+
+//Update a Student data
+
+router.put("/update/:id",(req,res)=>{
+db.Students.update({
+    Firstname:req.body.Firstname,
+    Lastname:req.body.Lastname,
+    DateofBirth:req.body.DateofBirth,
+    Class:req.body.Class
+},{
+    where:{
+        id:req.params.id
+    }
+
+}).then(()=>{
+    res.send("UPDATED")
+}).catch((err)=>{
+    console.log(err)
+    res.send(err)
+})
+
+})
+
+module.exports = router;
+
+
+and then do this in index.js as next process
+
+const apiRoutes = require("./routes/apiRoutes");
+
+app.use("/api",apiRoutes);
